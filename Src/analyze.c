@@ -33,8 +33,6 @@ void xAnalyzeTask(void *arguments){
 	int16_t deltaPressure = 0;
 	uint8_t prescalerCounter = 10;
 	uint8_t analyzeCounterRef[4] = {5};
-//	char messageDebug[16] = {0};
-//	uint8_t mesDebugLen = 0;
 
 	xStatus = xSemaphoreTake(xPressureCompensationSemaphore, portMAX_DELAY);
 	for(;;){
