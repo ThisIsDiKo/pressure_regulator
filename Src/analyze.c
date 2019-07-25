@@ -26,6 +26,8 @@ extern UART_HandleTypeDef huart1;
 
 uint8_t analyzeCounter[4] = {0};
 
+uint8_t airSystemType = 0;
+
 void xAnalyzeTask(void *arguments){
 	portBASE_TYPE xStatus;
 	uint8_t i = 0;
@@ -39,60 +41,92 @@ void xAnalyzeTask(void *arguments){
 		xStatus = xSemaphoreTake(xPressureCompensationSemaphore, portMAX_DELAY);
 		if (xStatus == pdPASS){
 
-			workState = FREE;
+			if (airSystemType == 0){ // Если мы работаем с ресивером
+				workState = FREE;
 
-			if (pressIsLower[0]){
-				if (filteredData.sens_1 < nessPressure[0]){
-					C1_UP_ON;
-					C1_DOWN_OFF;
-					workState = WORKING;
+				if (pressIsLower[0]){
+					if (filteredData.sens_1 < nessPressure[0]){
+						C1_UP_ON;
+						C1_DOWN_OFF;
+						workState = WORKING;
+					}
 				}
-			}
-			else{
-				if (filteredData.sens_1 > nessPressure[0]){
-					C1_UP_OFF;
-					C1_DOWN_ON;
-					workState = WORKING;
+				else{
+					if (filteredData.sens_1 > nessPressure[0]){
+						C1_UP_OFF;
+						C1_DOWN_ON;
+						workState = WORKING;
+					}
 				}
+
+				if (pressIsLower[1]){
+					if (filteredData.sens_2 < nessPressure[1]){
+						C2_UP_ON;
+						C2_DOWN_OFF;
+						workState = WORKING;
+					}
+				}
+				else{
+					if (filteredData.sens_2 > nessPressure[1]){
+						C2_UP_OFF;
+						C2_DOWN_ON;
+						workState = WORKING;
+					}
+				}
+
+				if (pressIsLower[2]){
+					if (filteredData.sens_3 < nessPressure[2]){
+						C3_UP_ON;
+						C3_DOWN_OFF;
+						workState = WORKING;
+					}
+				}
+				else{
+					if (filteredData.sens_3 > nessPressure[2]){
+						C3_UP_OFF;
+						C3_DOWN_ON;
+						workState = WORKING;
+					}
+				}
+
+				if (pressIsLower[3]){
+					if (filteredData.sens_4 < nessPressure[3]){
+						C4_UP_ON;
+						C4_DOWN_OFF;
+						workState = WORKING;
+					}
+				}
+				else{
+					if (filteredData.sens_4 > nessPressure[3]){
+						C4_UP_OFF;
+						C4_DOWN_ON;
+						workState = WORKING;
+					}
+				}
+
+
+				if (workState == FREE){
+					pressureCompensation = OFF;
+				}
+				else{
+					pressureCompensation = ON;
+				}
+
+				//Запускаем импульс
+				vTaskDelay(500 / portTICK_RATE_MS);
+				C1_DOWN_OFF;
+				C2_DOWN_OFF;
+				C3_DOWN_OFF;
+				C4_DOWN_OFF;
+
+				vTaskDelay(500 / portTICK_RATE_MS);
+				C1_UP_OFF;
+				C2_UP_OFF;
+				C3_UP_OFF;
+				C4_UP_OFF;
+				//Останавливаем импульс
+				vTaskDelay(1000 / portTICK_RATE_MS);
 			}
-
-			if (pressIsLower[1]){
-							if (filteredData.sens_2 < nessPressure[1]){
-								C2_UP_ON;
-								C2_DOWN_OFF;
-								workState = WORKING;
-							}
-						}
-						else{
-							if (filteredData.sens_2 > nessPressure[1]){
-								C2_UP_OFF;
-								C2_DOWN_ON;
-								workState = WORKING;
-							}
-						}
-
-
-			if (workState == FREE){
-				pressureCompensation = OFF;
-			}
-			else{
-				pressureCompensation = ON;
-			}
-
-			//Запускаем импульс
-			vTaskDelay(500 / portTICK_RATE_MS);
-			C1_DOWN_OFF;
-			C2_DOWN_OFF;
-			C3_DOWN_OFF;
-			C4_DOWN_OFF;
-
-			vTaskDelay(500 / portTICK_RATE_MS);
-			C1_UP_OFF;
-			C2_UP_OFF;
-			C3_UP_OFF;
-			C4_UP_OFF;
-			//Останавливаем импульс
-			vTaskDelay(1000 / portTICK_RATE_MS);
 		}
 	}
 	vTaskDelete(NULL);
