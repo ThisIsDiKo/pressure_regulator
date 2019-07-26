@@ -127,6 +127,190 @@ void xAnalyzeTask(void *arguments){
 				//Останавливаем импульс
 				vTaskDelay(1000 / portTICK_RATE_MS);
 			}
+			else{
+				if (prescalerCounter >= 5){
+								prescalerCounter = 0;
+											workState = FREE;
+
+											if (analyzeCounter[0] < 5){
+												workState = WORKING;
+													if (pressIsLower[0]){
+														if (filteredData.sens_1 < nessPressure[0]){
+															analyzeCounter[0] = 0;
+															analyzeCounterRef[0] = 5;
+															C1_UP_ON;
+															C1_DOWN_OFF;
+														}
+				//										else if (filteredData.sens_1 - nessPressure[0] > PRESS_ACCURACY){
+				//											analyzeCounter[0] = 0;
+				//											analyzeCounterRef[0] = 2;
+				//											C1_UP_OFF;
+				//											C1_DOWN_ON;
+				//										}
+														else{
+															analyzeCounter[0] += 1;
+															C1_UP_OFF;
+															C1_DOWN_OFF;
+														}
+													}
+													else{
+														if (filteredData.sens_1 > nessPressure[0]){
+															analyzeCounter[0] = 0;
+															analyzeCounterRef[0] = 5;
+															C1_DOWN_ON;
+															C1_UP_OFF;
+														}
+				//										else if (nessPressure[0] - filteredData.sens_1 > PRESS_ACCURACY){
+				//											analyzeCounter[0] = 0;
+				//											analyzeCounterRef[0] = 2;
+				//											C1_UP_ON;
+				//											C1_DOWN_OFF;
+				//										}
+														else{
+															analyzeCounter[0] += 1;
+															C1_UP_OFF;
+															C1_DOWN_OFF;
+														}
+													}
+											}
+											else{
+												analyzeCounter[0] = 0;
+												C1_UP_OFF;
+												C1_DOWN_OFF;
+											}
+
+											if (analyzeCounter[1] < 5){
+												workState = WORKING;
+													if (pressIsLower[1]){
+														if (filteredData.sens_2 < nessPressure[1]){
+															analyzeCounter[1] = 0;
+															analyzeCounterRef[1] = 5;
+															C2_UP_ON;
+															C2_DOWN_OFF;
+														}
+				//										else if (filteredData.sens_2 - nessPressure[1] > PRESS_ACCURACY){
+				//											analyzeCounter[1] = 0;
+				//											analyzeCounterRef[1] = 2;
+				//											C2_UP_OFF;
+				//											C2_DOWN_ON;
+				//										}
+														else{
+															analyzeCounter[1] += 1;
+															C2_UP_OFF;
+															C2_DOWN_OFF;
+														}
+													}
+													else{
+														if (filteredData.sens_2 > nessPressure[1]){
+															analyzeCounter[1] = 0;
+															analyzeCounterRef[1] = 5;
+															C2_DOWN_ON;
+															C2_UP_OFF;
+														}
+				//										else if (nessPressure[1] - filteredData.sens_2 > PRESS_ACCURACY){
+				//											analyzeCounter[1] = 0;
+				//											analyzeCounterRef[1] = 2;
+				//											C2_UP_ON;
+				//											C2_DOWN_OFF;
+				//										}
+														else{
+															analyzeCounter[1] += 1;
+															C2_UP_OFF;
+															C2_DOWN_OFF;
+														}
+													}
+											}
+											else{
+												analyzeCounter[1] = 0;
+												C2_UP_OFF;
+												C2_DOWN_OFF;
+											}
+
+				//							if (analyzeCounter[2] < 5){
+				//								workState = WORKING;
+				//									if (pressIsLower[2]){
+				//										if (filteredData.sens_3 < nessPressure[2]){
+				//											analyzeCounter[2] = 0;
+				//											C3_UP_ON;
+				//											C3_DOWN_OFF;
+				//										}
+				//										else{
+				//											analyzeCounter[2] += 1;
+				//											C3_UP_OFF;
+				//											C3_DOWN_OFF;
+				//										}
+				//									}
+				//									else{
+				//										if (filteredData.sens_3 > nessPressure[2]){
+				//											analyzeCounter[2] = 0;
+				//											C3_DOWN_ON;
+				//											C3_UP_OFF;
+				//										}
+				//										else{
+				//											analyzeCounter[2] += 1;
+				//											C3_UP_OFF;
+				//											C3_DOWN_OFF;
+				//										}
+				//									}
+				//							}
+				//							else{
+				//								analyzeCounter[2] = 0;
+				//								C3_UP_OFF;
+				//								C3_DOWN_OFF;
+				//							}
+
+
+				//							if (analyzeCounter[3] < 5){
+				//								workState = WORKING;
+				//				//				deltaPressure = filteredData.sens_1 - nessPressure[0];
+				//				//				deltaPressure = abs(deltaPressure);
+				//				//				if (deltaPressure > PRESSURE_ACCURACY){
+				//									if (pressIsLower[3]){
+				//										if (filteredData.sens_4 < nessPressure[3]){
+				//											analyzeCounter[3] = 0;
+				//											C4_UP_ON;
+				//											C4_DOWN_OFF;
+				//										}
+				//										else{
+				//											analyzeCounter[3] += 1;
+				//											C4_UP_OFF;
+				//											C4_DOWN_OFF;
+				//										}
+				//									}
+				//									else{
+				//										if (filteredData.sens_4 > nessPressure[3]){
+				//											analyzeCounter[3] = 0;
+				//											C4_DOWN_ON;
+				//											C4_UP_OFF;
+				//										}
+				//										else{
+				//											analyzeCounter[3] += 1;
+				//											C4_UP_OFF;
+				//											C4_DOWN_OFF;
+				//										}
+				//									}
+				//							}
+				//							else{
+				//								analyzeCounter[3] = 0;
+				//								C4_UP_OFF;
+				//								C4_DOWN_OFF;
+				//							}
+
+											if (workState == FREE){
+												prescalerCounter = 10;
+												pressureCompensation = OFF;
+											}
+											else{
+												pressureCompensation = ON;
+											}
+
+
+
+							}
+							else{
+								prescalerCounter++;
+							}
+			}
 		}
 	}
 	vTaskDelete(NULL);

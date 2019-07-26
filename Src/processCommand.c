@@ -28,15 +28,8 @@ extern uint16_t server_UID;
 
 void xProcessCommandTask(void* arguments){
 		portBASE_TYPE xStatus;
-
 		uint8_t command[MAX_COMMAND_LENGTH] = {0};
-
-//		uint8_t i = 0;
-//		uint32_t delayCounter = 0;
-//		char messageDebug[128] = {0};
-//		uint8_t mesDebugLen = 0;
 		uint8_t messageLength = 0;
-
 		uint16_t id = 0;
 		char co = 0;
 		char valve = 0;
@@ -57,60 +50,39 @@ void xProcessCommandTask(void* arguments){
 						valve = command[10];
 						co = co - '0';
 						if (id == server_UID){
-//							if (co == 4){
-//								sendData[0] = filteredData.sens_1;
-//								sendData[1] = filteredData.sens_2;
-//								sendData[2] = filteredData.sens_3;
-//								sendData[3] = filteredData.sens_4;
-//							}
-//							else if (co == 3){
-//								sendData[0] = filteredData.sens_1;
-//								sendData[1] = filteredData.sens_2;
-//								sendData[2] = filteredData.sens_3;
-//								sendData[3] = 0;
-//							}
-//							else if (co == 2){
-//								sendData[0] = filteredData.sens_1;
-//								sendData[1] = filteredData.sens_2;
-//								sendData[2] = 0;
-//								sendData[3] = 0;
-//							}
-//							else if (co == 1){
-//								sendData[0] = filteredData.sens_1;
-//								sendData[1] = 0;
-//								sendData[2] = 0;
-//								sendData[3] = 0;
-//							}
 							sendData[0] = filteredData.sens_1;
-															sendData[1] = filteredData.sens_2;
-															sendData[2] = filteredData.sens_3;
-															sendData[3] = filteredData.sens_4;
-							messageLength = sprintf(message, "m,%hu,%hu,%hu,%hu,%hu,\n", controllerSettings.clientID,sendData[0],sendData[1],sendData[2],sendData[3]);
-
+							sendData[1] = filteredData.sens_2;
+							sendData[2] = filteredData.sens_3;
+							sendData[3] = filteredData.sens_4;
+							messageLength = sprintf(message, "m,%hu,%hu,%hu,%hu,%hu,\n", controllerSettings.clientID,
+																						 sendData[0],
+																						 sendData[1],
+																						 sendData[2],
+																						 sendData[3]);
 							HAL_UART_Transmit_DMA(&huart1, (uint8_t*) message, messageLength);
 						}
 						//Добавлена проверка на исследование состояния кнопок
 
 						if (valve != prev_command){
 							if (valve & 0b00000001) 	C1_UP_ON;
-							else 				   			C1_UP_OFF;
+							else 				   		C1_UP_OFF;
 							if (valve & 0b00000010) 	C1_DOWN_ON;
-							else 				   			C1_DOWN_OFF;
+							else 				   		C1_DOWN_OFF;
 
 							if (valve & 0b00000100) 	C2_UP_ON;
-							else 				   			C2_UP_OFF;
+							else 				   		C2_UP_OFF;
 							if (valve & 0b00001000) 	C2_DOWN_ON;
-							else 				   			C2_DOWN_OFF;
+							else 				   		C2_DOWN_OFF;
 
 							if (valve & 0b00010000) 	C3_UP_ON;
-							else 				   			C3_UP_OFF;
+							else 				   		C3_UP_OFF;
 							if (valve & 0b00100000) 	C3_DOWN_ON;
-							else 				   			C3_DOWN_OFF;
+							else 				   		C3_DOWN_OFF;
 
 							if (valve & 0b01000000) 	C4_UP_ON;
-							else 				   			C4_UP_OFF;
+							else 				   		C4_UP_OFF;
 							if (valve & 0b10000000) 	C4_DOWN_ON;
-							else 				   			C4_DOWN_OFF;
+							else 				   		C4_DOWN_OFF;
 
 							prev_command = valve;
 						}
@@ -159,14 +131,12 @@ void xProcessCommandTask(void* arguments){
 								mWrite_flash();
 								messageLength = sprintf(message, "xc,%05d,ok,\n", controllerSettings.clientID);
 								HAL_UART_Transmit_DMA(&huart1, (uint8_t*) message, messageLength);
-								vTaskDelay(100 / portTICK_RATE_MS);
 
+								vTaskDelay(100 / portTICK_RATE_MS);
 								CMD_RF_ON;
 								vTaskDelay(50 / portTICK_RATE_MS);
-
 								messageLength = sprintf(message, "AT+C%03d\r", channel);
 								HAL_UART_Transmit_DMA(&huart1, (uint8_t*) message, messageLength);
-
 								vTaskDelay(50 / portTICK_RATE_MS);
 								CMD_RF_OFF;
 
