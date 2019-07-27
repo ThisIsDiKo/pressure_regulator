@@ -54,6 +54,11 @@ DMA_HandleTypeDef hdma_usart1_tx;
 osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 
+const uint32_t UP_PORT[4] = {C1_UP_PORT, C2_UP_PORT, C3_UP_PORT, C4_UP_PORT};
+const uint32_t UP_PIN[4] = {C1_UP_PIN, C2_UP_PIN, C3_UP_PIN, C4_UP_PIN};
+const uint32_t DOWN_PORT[4] = {C1_DOWN_PORT, C2_DOWN_PORT, C3_DOWN_PORT, C4_DOWN_PORT};
+const uint32_t DOWN_PIN[4] = {C1_DOWN_PIN, C2_DOWN_PIN, C3_DOWN_PIN, C4_DOWN_PIN};
+
 uint16_t ADCRawData[4];
 uint16_t sensorValue[4];
 
