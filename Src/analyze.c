@@ -9,22 +9,16 @@
 #include "structures.h"
 #include "analyze.h"
 
-#include "math.h"
-
-#define PRESS_ACCURACY		100
-
 extern uint16_t nessPressure[4];
-extern struct Filtered filteredData;
+extern uint8_t pressIsLower[4];
+extern uint16_t filteredPressure[4];
+//extern struct Filtered filteredData;
 
 extern enum WorkState workState;
 extern enum Compensation pressureCompensation;
 
-extern uint8_t pressIsLower[4];
-
 extern xSemaphoreHandle xPressureCompensationSemaphore;
-extern UART_HandleTypeDef huart1;
 
-uint8_t analyzeCounter[4] = {0};
 
 uint8_t airSystemType = 0;
 
@@ -36,10 +30,7 @@ extern const uint32_t DOWN_PIN[4];
 void xAnalyzeTask(void *arguments){
 	portBASE_TYPE xStatus;
 	uint8_t i = 0;
-
-	int16_t deltaPressure = 0;
-	uint8_t prescalerCounter = 10;
-	uint8_t analyzeCounterRef[4] = {5};
+	uint8_t analyzeCounter[4] = {0};
 
 	xStatus = xSemaphoreTake(xPressureCompensationSemaphore, portMAX_DELAY);
 	for(;;){

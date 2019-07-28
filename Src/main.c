@@ -76,6 +76,8 @@ uint16_t server_UID = 0;
 struct controllerData controllerSettings = {0};
 
 struct Filtered filteredData = {0};
+uint16_t filteredPressure[4] = {1,2,3,4};
+
 enum WorkState workState = FREE;
 enum Compensation pressureCompensation = OFF;
 
