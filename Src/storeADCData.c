@@ -22,6 +22,10 @@ extern uint16_t sensorValue[4];
 uint8_t prevCompensation = OFF;
 uint8_t lastTimeCommand = 0;
 
+extern GPIO_TypeDef * UP_PORT[4];
+extern uint32_t UP_PIN[4];
+extern GPIO_TypeDef * DOWN_PORT[4];
+extern uint32_t DOWN_PIN[4];
 
 uint16_t fir_filter(uint16_t *signal, uint16_t sample){
 

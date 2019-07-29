@@ -22,15 +22,16 @@ extern xSemaphoreHandle xPressureCompensationSemaphore;
 
 uint8_t airSystemType = 0;
 
-extern const uint32_t UP_PORT[4];
-extern const uint32_t UP_PIN[4];
-extern const uint32_t DOWN_PORT[4];
-extern const uint32_t DOWN_PIN[4];
+extern GPIO_TypeDef *UP_PORT[4];
+extern uint32_t UP_PIN[4];
+extern GPIO_TypeDef *DOWN_PORT[4];
+extern uint32_t DOWN_PIN[4];
 
 void xAnalyzeTask(void *arguments){
 	portBASE_TYPE xStatus;
 	uint8_t i = 0;
 	uint8_t analyzeCounter[4] = {0};
+	uint8_t prescalerCounter = 0;
 
 	xStatus = xSemaphoreTake(xPressureCompensationSemaphore, portMAX_DELAY);
 	for(;;){
@@ -82,7 +83,7 @@ void xAnalyzeTask(void *arguments){
 					for (i = 0; i < 4; i++){
 						if (analyzeCounter[i] < 5){
 							workState = WORKING;
-							if (pressureIsLower[i]){
+							if (pressIsLower[i]){
 								if (filteredPressure[i] < nessPressure[i]){
 									analyzeCounter[i] = 0;
 									HAL_GPIO_WritePin(UP_PORT[i], UP_PIN[i], GPIO_PIN_SET);

@@ -59,6 +59,7 @@ void controller_initialize(){
 #endif
 
 	//Инициализация радиопередатчика
+	//init_RF433();
 	init_RF433();
 
 	vSemaphoreCreateBinary(xPressureCompensationSemaphore);

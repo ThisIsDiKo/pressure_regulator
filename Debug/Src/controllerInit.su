@@ -1,4 +1,4 @@
 controllerInit.c:32:6:xBlynkTask	8	static
 controllerInit.c:40:6:init_RF433	0	static
 controllerInit.c:45:6:controller_initialize	24	static
-controllerInit.c:145:6:print_settings	0	static
+controllerInit.c:146:6:print_settings	0	static

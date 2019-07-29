@@ -13,7 +13,6 @@
 
 extern UART_HandleTypeDef huart1;
 
-extern struct Filtered filteredData;
 extern struct controllerData controllerSettings;
 extern xQueueHandle xRecCommandQueue;
 
@@ -25,6 +24,8 @@ uint8_t pressIsLower[4] = {0};
 extern uint8_t lastTimeCommand;
 
 extern uint16_t server_UID;
+extern uint16_t filteredPressure[4];
+extern uint8_t airSystemType;
 
 void xProcessCommandTask(void* arguments){
 		portBASE_TYPE xStatus;
@@ -37,6 +38,8 @@ void xProcessCommandTask(void* arguments){
 
 		char prev_command = 0;
 		uint16_t sendData[4] = {0};
+		uint8_t i = 0;
+		char systemType = 0;
 
 		for(;;){
 			xStatus = xQueueReceive(xRecCommandQueue, command, portMAX_DELAY);
@@ -50,10 +53,9 @@ void xProcessCommandTask(void* arguments){
 						valve = command[10];
 						co = co - '0';
 						if (id == server_UID){
-							sendData[0] = filteredData.sens_1;
-							sendData[1] = filteredData.sens_2;
-							sendData[2] = filteredData.sens_3;
-							sendData[3] = filteredData.sens_4;
+							for (i = 0; i < 4; i++){
+								sendData[i] = filteredPressure[i];
+							}
 							messageLength = sprintf(message, "m,%hu,%hu,%hu,%hu,%hu,\n", controllerSettings.clientID,
 																						 sendData[0],
 																						 sendData[1],
@@ -64,6 +66,9 @@ void xProcessCommandTask(void* arguments){
 						//Добавлена проверка на исследование состояния кнопок
 
 						if (valve != prev_command){
+
+							pressureCompensation = OFF;
+
 							if (valve & 0b00000001) 	C1_UP_ON;
 							else 				   		C1_UP_OFF;
 							if (valve & 0b00000010) 	C1_DOWN_ON;
@@ -96,36 +101,39 @@ void xProcessCommandTask(void* arguments){
 							}
 						}
 						else if (command[1] == ','){
-							sscanf((char*)command, "s,%hu,%hu,%hu,%hu,%hu,\n", &id, &nessPressure[0], &nessPressure[1],&nessPressure[2],&nessPressure[3]);
+							sscanf((char*)command, "s,%hu,%hu,%hu,%hu,%hu,%c,\n", &id, &nessPressure[0], &nessPressure[1], &nessPressure[2], &nessPressure[3], &systemType);
 							if (id == server_UID){
-								if (filteredData.sens_1 > nessPressure[0]) 	pressIsLower[0] = 0;
-								else 										pressIsLower[0] = 1;
-								if (filteredData.sens_2 > nessPressure[1]) 	pressIsLower[1] = 0;
-								else 										pressIsLower[1] = 1;
-								if (filteredData.sens_3 > nessPressure[2]) 	pressIsLower[2] = 0;
-								else 										pressIsLower[2] = 1;
-								if (filteredData.sens_4 > nessPressure[3]) 	pressIsLower[3] = 0;
-								else 										pressIsLower[3] = 1;
+								if (systemType == '1'){ // air system choice
+									airSystemType = 1; // for compressor
+								}
+								else{
+									airSystemType = 0;
+								}
+								for (i = 0; i < 4; i++){
+									if (filteredPressure[i] > nessPressure[i])
+										pressIsLower[i] = 0;
+									else
+										pressIsLower[i] = 1;
+								}
 								pressureCompensation = ON;
 							}
 						}
 						break;
 					}
 					case 'x':{
+
+						pressureCompensation = OFF;
+
 						if (command[1] == '?'){
 							sscanf((char*)command, "x?%hu,\n", &controllerSettings.clientID);
 							messageLength = sprintf(message, "x,%05d,%05d,\n", controllerSettings.clientID, server_UID);
-
 							HAL_UART_Transmit_DMA(&huart1, (uint8_t*) message, messageLength);
 						}
 						else if (command[1] == 'c'){
-
 							sscanf((char*)command, "xc,%hu,%hu,\n", &id, &channel);
 //							channel = channel - '0';
-
 							messageLength = sprintf(message, "id,%05d,%05d,%03d\n", id, server_UID, channel);
 							HAL_UART_Transmit(&huart1, (uint8_t*) message, messageLength, 0x2000);
-
 							if (id == server_UID){
 								controllerSettings.rfChannel = channel;
 								mWrite_flash();

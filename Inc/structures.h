@@ -7,12 +7,12 @@
 
 #include "globals.h"
 
-struct Filtered{
-	uint16_t sens_1;
-	uint16_t sens_2;
-	uint16_t sens_3;
-	uint16_t sens_4;
-};
+//struct Filtered{
+//	uint16_t sens_1;
+//	uint16_t sens_2;
+//	uint16_t sens_3;
+//	uint16_t sens_4;
+//};
 
 struct controllerData{
 	uint8_t  rfChannel;
