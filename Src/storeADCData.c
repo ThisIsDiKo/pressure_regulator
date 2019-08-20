@@ -14,16 +14,18 @@ extern ADC_HandleTypeDef hadc1;
 
 extern xSemaphoreHandle xPressureCompensationSemaphore;
 
-extern struct Filtered filteredData;
-
+extern uint16_t filteredPressure[4];
 extern enum Compensation pressureCompensation;
-uint8_t prevCompensation = OFF;
-
-uint8_t lastTimeCommand = 0;
-
 extern uint16_t ADCRawData[4];
 extern uint16_t sensorValue[4];
 
+uint8_t prevCompensation = OFF;
+uint8_t lastTimeCommand = 0;
+
+extern GPIO_TypeDef * UP_PORT[4];
+extern uint32_t UP_PIN[4];
+extern GPIO_TypeDef * DOWN_PORT[4];
+extern uint32_t DOWN_PIN[4];
 
 uint16_t fir_filter(uint16_t *signal, uint16_t sample){
 
@@ -99,19 +101,17 @@ void xStoreADCDataTask(void* arguments){
 	uint16_t sens2_array[10] = {2};
 	uint16_t sens3_array[10] = {3};
 	uint16_t sens4_array[10] = {4};
+	uint8_t i = 0;
+
 
 
 	for(;;){
 
 		if (lastTimeCommand > 50){
-			C1_UP_OFF;
-			C1_DOWN_OFF;
-			C2_UP_OFF;
-			C2_DOWN_OFF;
-			C3_UP_OFF;
-			C3_DOWN_OFF;
-			C4_UP_OFF;
-			C4_DOWN_OFF;
+			for (i  = 0; i < 4; i++){
+				HAL_GPIO_WritePin(UP_PORT[i], UP_PIN[i], GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(DOWN_PORT[i], DOWN_PIN[i], GPIO_PIN_RESET);
+			}
 			lastTimeCommand = 0;
 		}
 		else{
@@ -127,10 +127,10 @@ void xStoreADCDataTask(void* arguments){
 
 		//TODO: засечь врем¤ выполнени¤ фильтрации
 		//LEFT_UP_ON;
-		filteredData.sens_1 = fir_filter(sens1_array, sensorValue[SENS_1]);
-		filteredData.sens_2 = fir_filter(sens2_array, sensorValue[SENS_2]);
-		filteredData.sens_3 = fir_filter(sens3_array, sensorValue[SENS_3]);
-		filteredData.sens_4 = fir_filter(sens4_array, sensorValue[SENS_4]);
+		filteredPressure[0] = fir_filter(sens1_array, sensorValue[SENS_1]);
+		filteredPressure[1] = fir_filter(sens2_array, sensorValue[SENS_2]);
+		filteredPressure[2] = fir_filter(sens3_array, sensorValue[SENS_3]);
+		filteredPressure[3] = fir_filter(sens4_array, sensorValue[SENS_4]);
 		//LEFT_UP_OFF;
 
 
@@ -140,14 +140,10 @@ void xStoreADCDataTask(void* arguments){
 		}
 		else{
 			if (prevCompensation == ON){
-				C1_UP_OFF;
-				C1_DOWN_OFF;
-				C2_UP_OFF;
-				C2_DOWN_OFF;
-				C3_UP_OFF;
-				C3_DOWN_OFF;
-				C4_UP_OFF;
-				C4_DOWN_OFF;
+				for (i  = 0; i < 4; i++){
+					HAL_GPIO_WritePin(UP_PORT[i], UP_PIN[i], GPIO_PIN_RESET);
+					HAL_GPIO_WritePin(DOWN_PORT[i], DOWN_PIN[i], GPIO_PIN_RESET);
+				}
 				prevCompensation = OFF;
 			}
 
