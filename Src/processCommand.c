@@ -148,7 +148,7 @@ void xProcessCommandTask(void* arguments){
 								vTaskDelay(50 / portTICK_RATE_MS);
 								CMD_RF_OFF;
 
-								HAL_GPIO_WritePin(A_LED_PORT, A_LED_PIN, GPIO_PIN_RESET);
+								TIM3->CCR2 = 0;
 
 							}
 						}

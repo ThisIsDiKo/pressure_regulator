@@ -18,6 +18,7 @@
 
 extern ADC_HandleTypeDef hadc1;
 extern UART_HandleTypeDef huart1;
+extern TIM_HandleTypeDef htim3;
 
 extern xSemaphoreHandle xPressureCompensationSemaphore;
 extern xQueueHandle xRecCommandQueue;
@@ -29,22 +30,62 @@ extern struct controllerData controllerSettings;
 extern uint16_t server_UID;
 uint32_t unique_ID[3] = {0};
 
+uint8_t showBlynk = 1;
+
 void xBlynkTask(void* arguments){
+    uint16_t r = 10000;
+    int16_t rInc = 100;
+    uint16_t b = 20000;
+    uint16_t g = 30000;
+    int16_t bInc = -100;
+    int16_t gInc = -100;
 	for(;;){
-		HAL_GPIO_TogglePin(BLYNK_LED_PORT, BLYNK_LED_PIN);
-		vTaskDelay(500 / portTICK_RATE_MS);
+		  if (showBlynk){
+			  vTaskDelay(10);
+//			  r += rInc;
+//			  g += gInc;
+//			  b += bInc;
+//			  if ((r > 45400) || (r < 200)) rInc = -rInc;
+//			  if ((g > 45400) || (g < 200)) gInc = -gInc;
+//			  if ((b > 45400) || (b < 200)) bInc = -bInc;
+//
+//			  TIM3->CCR1 = b; //B
+//			  TIM3->CCR2 = g; //G
+//			  TIM3->CCR3 = r; //R
+		  }
 	}
 	vTaskDelete(NULL);
 }
 
 void init_RF433(){
+	huart1.Init.BaudRate = 9600;
+	HAL_UART_Init(&huart1);
+
+	CMD_RF_ON;
+	HAL_Delay(50);
+
+	HAL_UART_Transmit(&huart1, (uint8_t*) "AT+FU1\r", 7, 0x2000);
+	HAL_Delay(100);
+	HAL_UART_Transmit(&huart1, (uint8_t*) "AT+B19200\r", 7, 0x2000);
+	HAL_Delay(100);
+
 	CMD_RF_OFF;
+	HAL_Delay(50);
+
+	huart1.Init.BaudRate = 19200;
+	HAL_UART_Init(&huart1);
 	return;
 }
 
 void controller_initialize(){
-
+	HAL_UART_Transmit(&huart1, (uint8_t*) "AT+FU1\n", 7, 0x2000);
 	//Запуск прерываний
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+	TIM3->CCR1 = 35000;
+	//init_RF433();
+
 	HAL_UART_Receive_IT(&huart1, &recCommandByte, 1);
 	HAL_ADCEx_InjectedStart_IT(&hadc1);
 
@@ -60,7 +101,7 @@ void controller_initialize(){
 
 	//Инициализация радиопередатчика
 	//init_RF433();
-	init_RF433();
+
 
 	vSemaphoreCreateBinary(xPressureCompensationSemaphore);
 
@@ -72,7 +113,7 @@ void controller_initialize(){
 
 	xTaskCreate(xBlynkTask,
 				"Blynk",
-				200,
+				400,
 				NULL,
 				1,
 				NULL);
@@ -90,10 +131,10 @@ void controller_initialize(){
 							1,
 							NULL);
 
-	#if DEBUG_CALIBRATION_SERIAL
+	#if DEBUG_SERIAL
 		fre=xPortGetFreeHeapSize();
 		sprintf(message, "heap after Scan: %ld\r\n", fre);
-		HAL_UART_Transmit(&huart1, (uint8_t*) str, strlen(str), 0xFFFF);
+		HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), 0xFFFF);
 	#endif
 
 	xTaskCreate(xStoreADCDataTask,
